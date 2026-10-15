@@ -1,0 +1,31 @@
+name: Check configuration
+on: [push, pull_request]
+jobs:
+  lua-and-linux-installer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Neovim from official release
+        run: |
+          curl -fL https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz -o /tmp/nvim.tar.gz
+          tar -xzf /tmp/nvim.tar.gz -C /tmp
+          echo /tmp/nvim-linux-x86_64/bin >> "$GITHUB_PATH"
+      - run: nvim --clean --headless -l tests/smoke.lua
+      - run: bash -n install.sh
+      - name: Check isolated install and backup
+        run: |
+          bash install.sh --target "$RUNNER_TEMP/test-config" --skip-plugins
+          test -f "$RUNNER_TEMP/test-config/init.lua"
+          bash install.sh --target "$RUNNER_TEMP/test-config" --skip-plugins
+          compgen -G "$RUNNER_TEMP/test-config.backup-*" >/dev/null
+  windows-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check isolated install and backup
+        shell: pwsh
+        run: |
+          ./install.ps1 -Target "$env:RUNNER_TEMP\test-config" -SkipPlugins -SkipHelper
+          if (!(Test-Path "$env:RUNNER_TEMP\test-config\init.lua")) { throw 'Missing init.lua' }
+          ./install.ps1 -Target "$env:RUNNER_TEMP\test-config" -SkipPlugins -SkipHelper
+          if (!(Get-ChildItem "$env:RUNNER_TEMP\test-config.backup-*")) { throw 'Missing backup' }

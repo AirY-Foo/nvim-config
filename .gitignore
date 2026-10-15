@@ -1,0 +1,24 @@
+# Machine overrides and secrets
+lua/config/local.lua
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+auth.json
+credentials*
+# Generated state / binaries / historical backups
+*.exe
+*.dll
+*.log
+*.bak
+*.backup*
+*.selection-backup-*
+backup-*/
+bin/
+.test*/
+.cache/
+__pycache__/
+*.swp
+*.swo
+# Tracked: lazy-lock.json and lazyvim.json are intentional.
